@@ -1,0 +1,24 @@
+{
+    "name": "gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate",
+    "description": "PHP script to autoupdate your lets encrypt certs on maxcdn",
+    "type": "project",
+    "require": {
+        "maxcdn/php-maxcdn": "2.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    },
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "gitchrisqueen",
+            "email": "christopher.queen@gmail.com"
+        }
+    ]
+
+}
