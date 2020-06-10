@@ -12,10 +12,9 @@
 
 3. Pull the script into the folder on you SiteGround server
     - composer require gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate
-    - composer install
 
 4. Update your API credentials
-    - Inside /public_html/created_folder/src/autoupdate/php
+    - Inside /public_html/created_folder/vendor/gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate/src/autoupdate.php
     - Update lines 18-20
     ~~~php class:"lineNo"
    const CONSUMER_KEY = 'xxxxxx'; // Consumer Key from MaxCDN
