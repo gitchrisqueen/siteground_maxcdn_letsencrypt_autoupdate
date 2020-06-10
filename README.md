@@ -1,8 +1,27 @@
-# siteground_maxcdn_letsencrypt_autoupdate
-PHP script to auto update your lets encrypt certs on maxcdn
+## PHP script to auto update your lets encrypt certs from your SiteGround host to maxCDN
 
-Getting Started
+#Getting Started
 
-1. Create an API key on 
+1. Create an API key on MaxCDN
+    - https://cp.maxcdn.com/account/api/create
 
-You will need to whitelist your siteground server in the API tab
+2. White list the ip address of your site ground
+    - https://cp.maxcdn.com/account/api/whitelist
+
+3. Create a public folder on you SiteGround cpanel under /public_html
+
+3. Pull the script into the folder on you SiteGround server
+    - composer require gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate
+    - composer install
+
+4. Update your API credentials
+    - Inside /public_html/created_folder/src/autoupdate/php
+    - Update lines 18-20
+    ~~~php class:"lineNo"
+   const CONSUMER_KEY = 'xxxxxx'; // Consumer Key from MaxCDN
+   const CONSUMER_SECRET = 'XXXX'; // Consumer Secret from MaxCDN;
+   const ALIAS = 'XXXXXX'; // Alias from MaxCDN 
+   ~~~
+
+5. Setup a cron tab that calls /public_html/created_folder/index.php
+    - Recommended: Run a daily cron

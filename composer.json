@@ -1,6 +1,6 @@
 {
     "name": "gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate",
-    "description": "PHP script to autoupdate your lets encrypt certs on maxcdn",
+    "description": "PHP script to auto update your lets encrypt certs on maxcdn",
     "type": "project",
     "require": {
         "maxcdn/php-maxcdn": "2.*"
