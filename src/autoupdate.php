@@ -20,7 +20,7 @@ class AutoUpdate
     const ALIAS = 'XXXXXX'; // Alias from MaxCDN
     //const lineBreak = "\r\n";
     const lineBreak = "<br>";
-    const LOG_FILE = __DIR__ . '/letsencryptautopupdatelogs/log.txt';
+    const LOG_FILE = __DIR__ . DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR.'log.txt';
     var $api;
     var $homdDir;
 
@@ -260,7 +260,7 @@ class AutoUpdate
         if ($updated) {
             $postFix = 'Updated Successfully';
         }
-        file_put_contents(self::LOG_FILE, "Domain: " . $domainName . ' | ' . $postFix . ' at ' . date('l jS \of F Y h:i:s A'), FILE_APPEND);
+        file_put_contents(self::LOG_FILE, "Domain: " . $domainName . ' | ' . $postFix . ' at ' . date('l jS \of F Y h:i:s A').'\r\n', FILE_APPEND);
 
     }
 

@@ -10,17 +10,17 @@
 
 3. Create a public folder on you SiteGround cpanel under /public_html
 
-3. Pull the script into the folder on you SiteGround server
+4. Pull the script into the folder on you SiteGround server
     - composer require gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate
 
-4. Update your API credentials
+5. Update your API credentials
     - Inside /public_html/created_folder/vendor/gitchrisqueen/siteground_maxcdn_letsencrypt_autoupdate/src/autoupdate.php
     - Update lines 18-20
-    ~~~php class:"lineNo"
+    ~~~PHP
    const CONSUMER_KEY = 'xxxxxx'; // Consumer Key from MaxCDN
    const CONSUMER_SECRET = 'XXXX'; // Consumer Secret from MaxCDN;
    const ALIAS = 'XXXXXX'; // Alias from MaxCDN 
    ~~~
 
-5. Setup a cron tab that calls /public_html/created_folder/index.php
+6. Setup a cron tab that calls /public_html/created_folder/index.php
     - Recommended: Run a daily cron
