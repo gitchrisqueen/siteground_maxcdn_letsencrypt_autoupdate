@@ -5,6 +5,7 @@
     "require": {
         "maxcdn/php-maxcdn": "2.*"
     },
+    "version": "1.02",
     "require-dev": {
         "phpunit/phpunit": "^9"
     },

@@ -14,15 +14,15 @@ require_once(__DIR__ . '/../vendor/autoload.php');
 class AutoUpdate
 {
 
-    const DEBUG = false;
+    const DEBUG = true;
     const CONSUMER_KEY = 'xxxxxx'; // Consumer Key from MaxCDN
     const CONSUMER_SECRET = 'XXXX'; // Consumer Secret from MaxCDN;
     const ALIAS = 'XXXXXX'; // Alias from MaxCDN
     //const lineBreak = "\r\n";
     const lineBreak = "<br>";
-    const LOG_FILE = __DIR__ . DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'logs'.DIRECTORY_SEPARATOR.'log.txt';
+    const LOG_FILE = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'log.txt';
     var $api;
-    var $homdDir;
+    var $homeDir;
 
 
     /**
@@ -32,15 +32,15 @@ class AutoUpdate
     function __construct()
     {
         $user = posix_getpwuid(posix_getuid());
-        $this->homdDir = $user['dir'];
-        $this->log('Home Dir: '.$this->homdDir);
+        $this->homeDir = $user['dir'];
+        $this->displayOutput('Home Dir: ' . $this->homeDir);
 
         // Get Query from url
         if (isset($_REQUEST["log"]) && boolval($_REQUEST["log"])) {
             if (file_exists(self::LOG_FILE)) {
-                echo(file_get_contents(self::LOG_FILE));
+                $this->displayOutput(file_get_contents(self::LOG_FILE), null, true);
             } else {
-                echo("No log file exists");
+                $this->displayOutput("No log file exists", null, true);
             }
         } else {
             $this->api = new MaxCDN(self::ALIAS, self::CONSUMER_KEY, self::CONSUMER_SECRET);
@@ -69,22 +69,22 @@ class AutoUpdate
                         $sslCABundle = $cert['ssl_cabundle'];
                         $certInfoCurrent = $this->isCertCurrent($domainName, $sslCert, $sslCABundle);
                         if ($certInfoCurrent !== true) {
-                            $this->log($domainName . " ssl cert is not current. Updating now");
+                            $this->displayOutput($domainName . " ssl cert is not current. Updating now");
                             $this->updateMaxCDNCert($domainName, $certID, $certInfoCurrent);
-                        }else{
-                            $this->log($domainName . " ssl cert is already current.");
+                        } else {
+                            $this->displayOutput($domainName . " ssl cert is already current.");
                         }
                     }
                     break;
                 default:
                     if ($certResponse['error']) {
-                        $this->log('Error: ' . $certResponse['error']['message']);
+                        $this->displayOutput('Error: ' . $certResponse['error']['message']);
                     }
                     break;
 
             }
         } catch (Exception $e) {
-            $this->log('Error while getting list of certificates.', $e->getMessage());
+            $this->displayOutput('Error while getting list of certificates.', $e->getMessage());
 
         }
     }
@@ -101,13 +101,13 @@ class AutoUpdate
         $isCurrent = false;
         $currentCertInfo = $this->getCertInfoFromSiteGround($domainName);
         if (is_null($currentCertInfo)) {
-            $this->log("Site Ground has no cert to compare with " . $domainName);
+            $this->displayOutput("Site Ground has no cert to compare with " . $domainName);
             $isCurrent = true;
         } else if ($this->multiLineCompare($sslCert, $currentCertInfo['ssl_crt']) && $this->multiLineCompare($sslCABundle, $currentCertInfo['ssl_cabundle'])) {
             $isCurrent = true;
         } else {
-            $this->log($sslCert . self::lineBreak . 'Doest Not Equal' . self::lineBreak . $currentCertInfo['ssl_crt']);
-            $this->log('OR' . self::lineBreak . $sslCABundle . self::lineBreak . 'Doest Not Equal' . self::lineBreak . $currentCertInfo['ssl_cabundle']);
+            $this->displayOutput($sslCert . self::lineBreak . 'Doest Not Equal' . self::lineBreak . $currentCertInfo['ssl_crt']);
+            $this->displayOutput('OR' . self::lineBreak . $sslCABundle . self::lineBreak . 'Doest Not Equal' . self::lineBreak . $currentCertInfo['ssl_cabundle']);
             $isCurrent = $currentCertInfo;
         }
 
@@ -176,13 +176,13 @@ class AutoUpdate
 
         // Look for current cert
         if (!is_null($topLevelDomain)) {
-            $this->log("\r\nGetting cert info for " . $domainName);
+            $this->displayOutput("\r\nGetting cert info for " . $domainName);
             $filePrefix = ($subdomain == '*') ? '_wildcard_' : $subdomain;
             $search = $filePrefix . '_' . $domain . '_' . $topLevelDomain . '_';
 
-            $sitegroundCertDir =  $this->homdDir . '/ssl/certs/';
+            $sitegroundCertDir = $this->homeDir . '/ssl/certs/';
             $certPattern = '/(' . $search . '.*\.crt)$/';
-            $this->log('Cert Pattern: ' . $certPattern);
+            $this->displayOutput('Cert Pattern: ' . $certPattern);
 
             $certFiles = $this->myglob($sitegroundCertDir, $certPattern);
             if (is_array($certFiles) && count($certFiles) > 0) {
@@ -190,31 +190,31 @@ class AutoUpdate
                     return $this->getCertValidTo($a) - $this->getCertValidTo($b);
                 });
                 $useCertFile = array_pop($certFiles); // Get file at the end
-                $this->log('Found SSL Cert: ' . $useCertFile);
+                $this->displayOutput('Found SSL Cert: ' . $useCertFile);
                 $certInfo['ssl_crt'] = trim(file_get_contents($useCertFile));
 
                 // Parse the found cert file to find the file name of the keys file
                 $useCertFileNameSearch = str_replace($search, '', basename($useCertFile));
                 list($keyFilePart1, $keyFilePart2) = explode('_', $useCertFileNameSearch);
-                $sitegroundKeysDir =  $this->homdDir . '/ssl/keys/';
+                $sitegroundKeysDir = $this->homeDir . '/ssl/keys/';
                 $keysPattern = '/(' . $keyFilePart1 . '_' . $keyFilePart2 . '.*\.key)$/';
-                $this->log('Keys Pattern: ' . $keysPattern);
+                $this->displayOutput('Keys Pattern: ' . $keysPattern);
                 $keyFiles = $this->myglob($sitegroundKeysDir, $keysPattern);
                 if (is_array($keyFiles) && count($keyFiles) > 0) {
                     usort($keyFiles, function ($a, $b) {
                         return filemtime($a) - filemtime($b);
                     });
                     $useKeyFile = array_pop($keyFiles); // Get File at the end
-                    $this->log('Found SSL Key: ' . $useKeyFile);
+                    $this->displayOutput('Found SSL Key: ' . $useKeyFile);
                     $certInfo['ssl_key'] = trim(file_get_contents($useKeyFile));
                 } else {
-                    $this->log('No Key files found matching pattern: ' . $keysPattern);
+                    $this->displayOutput('No Key files found matching pattern: ' . $keysPattern);
                 }
             } else {
-                $this->log('No Cert files found matching pattern: ' . $certPattern);
+                $this->displayOutput('No Cert files found matching pattern: ' . $certPattern);
             }
         } else {
-            $this->log('No Top Level Domain for ' . $domainName);
+            $this->displayOutput('No Top Level Domain for ' . $domainName);
             $certInfo = null;
         }
 
@@ -239,18 +239,18 @@ class AutoUpdate
         $updateResponse = json_decode($this->api->put('/ssl.json/' . $certID, $certInfo), true);
         //$this->log(' Update Response : ', $updateResponse);
         if (isset($updateResponse['error'])) {
-            $this->log($domainName . ' Error:', $updateResponse['error']['message']);
+            $this->displayOutput($domainName . ' Error:', $updateResponse['error']['message']);
         } else if (isset($updateResponse['code']) && $updateResponse['code'] == 200) {
-            $this->log($domainName . ' Updated Successfully.');
+            $this->displayOutput($domainName . ' Updated Successfully.');
             $updated = true;
         } else {
-            $this->log('Something went wrong trying to update ' . $domainName);
+            $this->displayOutput('Something went wrong trying to update ' . $domainName);
         }
 
 
         // Log Update to log file
         if (!file_exists(self::LOG_FILE)) {
-            $this->log('File Doesnt exists. Making file');
+            $this->displayOutput('File Doesnt exists. Making file');
             if (!file_exists(dirname(self::LOG_FILE))) {
                 mkdir(dirname(self::LOG_FILE));
             }
@@ -260,27 +260,51 @@ class AutoUpdate
         if ($updated) {
             $postFix = 'Updated Successfully';
         }
-        file_put_contents(self::LOG_FILE, "Domain: " . $domainName . ' | ' . $postFix . ' at ' . date('l jS \of F Y h:i:s A').'\r\n', FILE_APPEND);
+        $this->recordToLogFile("Domain: " . $domainName . ' | ' . $postFix . ' at ' . date('l jS \of F Y h:i:s A') . "\r\n");
 
+
+    }
+
+    /**
+     * Records the passed in string to the log file
+     * @param $str
+     */
+    public static function recordToLogFile($str)
+    {
+        file_put_contents(self::LOG_FILE, $str, FILE_APPEND);
     }
 
     /**
      * Prints the $message and exports passed $variable if DEBUG constant is set to true
      * @param $message
      * @param null $variable
+     * @param false $debugOverride
      */
-    public static function log($message, $variable = null)
+    public static function displayOutput($message, $variable = null, $debugOverride = false)
     {
-        if (self::DEBUG) {
+        if (self::DEBUG || $debugOverride) {
             $message .= self::lineBreak;
             if (!is_null($variable)) {
                 $message .= var_export($variable, true) . self::lineBreak;
             }
             if (PHP_SAPI === 'cli') {
+                $message = self::br2nl($message);
+            } else {
                 $message = nl2br($message);
             }
             echo($message);
         }
+    }
+
+    /**
+     * Changes <br> to new line characters
+     * @param $str
+     * @return string|string[]|null
+     */
+    public static function br2nl($str)
+    {
+        $str = preg_replace("/(\r\n|\n|\r)/", "", $str);
+        return preg_replace("=&lt;br */?&gt;=i", "\n", $str);
     }
 
     /**
@@ -308,4 +332,5 @@ class AutoUpdate
     }
 
 }
+
 ?>
